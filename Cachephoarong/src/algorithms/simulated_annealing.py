@@ -31,6 +31,8 @@ def simulated_annealing(start_pos, goal_pos, grid, obstacles):
             break
 
         next_node = random.choice(neighbors)
+        # Tạo đường đi mới bằng cách thêm node tiếp theo vào đường đi hiện tại
+        # Cộng hai danh sách để được đường đi
         new_path = path_curr + [next_node]
 
         current_cost = len(path_curr) + heuristic(path_curr[-1], goal)

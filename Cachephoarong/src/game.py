@@ -13,7 +13,7 @@ from collections import defaultdict
 
 
 class Game:
-    def __init__(self, ai_mode=False, display_game=False):
+    def __init__(self, ai_mode=False, display_game=True):
         pygame.init()
         pygame.display.set_caption("Cá chép hoá rồng!!")
 
@@ -172,39 +172,13 @@ class Game:
                 self.grid, self.snake.positions, self.obstacles.positions
             )
         return True
-
-    def get_state(self):
-        state = np.zeros(24)
-        return state.reshape(1, -1)
-
-    def get_direct(self, output):
-        direction_idx = np.argmax(output)
-        directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
-        return directions[direction_idx]
-
-    def run_ai_mode(self, network):
-        self.reset_game()
-        running = True
-        while running:
-            self.clock.tick(FPS_AI)
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-            if not self.update(algorithm="AI", network=network):
-                break
-            self.draw()
-
-        return self.score
-
+    
     # Hàm để so sánh các chỉ số
     def compare_algorithms(self):
         # Các thuật toán dùng để so sánh
         algorithms = ["BFS", "A*", "AC3", "SA"]
         # Số lần để so sánh
-        num_of_algo = 10
+        num_of_algo = 5
         # tạo một defaultlist để lưu các chỉ số cần thiết
 
         stats = defaultdict(lambda: defaultdict(list))

@@ -6,7 +6,6 @@ from ..constants import *
 class Menu:
     @staticmethod
     def show_main_menu(screen):
-        """Hiển thị menu chính và trả về thuật toán được chọn"""
         button_font = pygame.font.SysFont("monospace", 16, bold=True)
 
         algorithms = {
@@ -53,7 +52,6 @@ class Menu:
 
     @staticmethod
     def show_pause_menu(screen):
-        """Hiển thị menu tạm dừng"""
         font = pygame.font.SysFont("monospace", 32)
 
         text = font.render("Game Paused!", True, WHITE)
