@@ -10,10 +10,11 @@ from .ui.grid import draw_grid
 from .algorithms import astar, bfs, ac3, simulated_annealing
 import matplotlib.pyplot as plt
 from collections import defaultdict
+from .q_learning.qlearning import QLearning
 
 
 class Game:
-    def __init__(self, ai_mode=False, display_game=True):
+    def __init__(self, display_game=True):
         pygame.init()
         pygame.display.set_caption("Cá chép hoá rồng!!")
 
@@ -21,7 +22,6 @@ class Game:
         self.surface = pygame.Surface(self.screen.get_size()).convert()
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("monospace", 16)
-        self.ai_mode = ai_mode
         self.display_game = display_game
 
         self.reset_game()
@@ -38,18 +38,7 @@ class Game:
         self.score = 0
 
     # Hàm để khởi động game, game có 2 chế độ là thuật toán và trai, ai là chế độ train
-    def run(self, net=None):
-        if self.ai_mode and self.display_game:
-            running = True
-            while running:
-                self.clock.tick(FPS)
-                if not self.handle_events():
-                    break
-                if not self.update(algorithm="AI", network=net):
-                    break
-                self.draw()
-            return self.score
-
+    def run(self):
         while True:
             algorithm = Menu.show_main_menu(self.screen)
             if algorithm == "COMPARE":
@@ -108,17 +97,20 @@ class Game:
                         return False
         return True
 
-    def update(self, algorithm=None, network=None):
-        if self.ai_mode and network:
-            state = self.get_state()
-            output = network.forward(state)
-            direction = self.get_direct(output)
-
-            # Di chuyển theo hướng thuật toán đã chọn
+    def update(self, algorithm=None):
+        if algorithm == "Q-learning":
+            # Định nghĩa kích thước state và action
+            state_size = GRID_WIDTH * GRID_HEIGHT  # Kích thước state dựa trên kích thước lưới
+            action_size = 4  # 4 hành động có thể: lên, xuống, trái, phải
+            
+            # Sử dụng mô hình Q-learning đã được huấn luyện
+            q_table = np.load('q_table.npy')
+            agent = QLearning(state_size, action_size)
+            agent.q_table = q_table
+            state = agent.get_state(self)
+            action = agent.get_action(state)
+            direction = [UP, DOWN, LEFT, RIGHT][action]
             self.snake.turn(direction)
-            if not self.snake.move(self.grid, self.obstacles.positions):
-                return False
-
         else:
             # Lấy vị trí hiện tại là cái đầu con rắn
             start_pos = (
@@ -151,7 +143,7 @@ class Game:
                 path = simulated_annealing.simulated_annealing(
                     start_pos, goal_pos, self.grid, self.obstacles.positions
                 )
-
+        
             if path is None or len(path) < 2:
                 return False
 
@@ -161,10 +153,10 @@ class Game:
 
             # Di chuyển rắn theo hướng đã tính toán
             self.snake.turn(direction)
-            if not self.snake.move(self.grid, self.obstacles.positions):
-                return False
 
-        # Hàm dùng để kiểm tra đó có phải là thức ăn không, nếu phải thì độ dài con rắn tăng 1 và score tăng 1
+        if not self.snake.move(self.grid, self.obstacles.positions):
+            return False
+
         if self.snake.get_head_position() == self.food.position:
             self.snake.length += 1
             self.score = self.snake.length - 1
