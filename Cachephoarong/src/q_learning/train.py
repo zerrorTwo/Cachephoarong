@@ -2,13 +2,16 @@ from src.game import Game
 from src.q_learning.qlearning import QLearning
 from ..constants import *
 import numpy as np
+import pygame
+import time
+
 def train():
-   game = Game(display_game=False)
+   game = Game(display_game=True)
    state_size = GRID_WIDTH * GRID_HEIGHT * GRID_WIDTH * GRID_HEIGHT
    action_size = 4  # UP, DOWN, LEFT, RIGHT
    agent = QLearning(state_size, action_size)
    
-   episodes = 100000
+   episodes = 1000
    max_steps = 1000
    
    for episode in range(episodes):
@@ -17,6 +20,10 @@ def train():
        total_reward = 0
        
        for step in range(max_steps):
+           game.draw()
+           pygame.display.flip()
+           time.sleep(0.01)
+           
            action = agent.get_action(state)
            
            # Chuyển đổi action thành hướng di chuyển
@@ -43,7 +50,7 @@ def train():
            
            if done:
                break
-       if episode % 100 == 0:
+       if episode % 1 == 0:
            print(f"Episode: {episode}, Score: {game.score}, Total Reward: {total_reward}")
            agent.save_q_table()
         #    print(f"Đã lưu Q-table sau episode {episode}")
