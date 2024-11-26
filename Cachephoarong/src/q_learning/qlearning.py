@@ -1,6 +1,9 @@
 import numpy as np
 import random
 from ..constants import GRIDSIZE, GRID_WIDTH, GRID_HEIGHT
+import glob
+import re
+import os
 
 class QLearning:
     def __init__(self, state_size, action_size):
@@ -10,11 +13,25 @@ class QLearning:
         self.discount_factor = 0.95
         self.epsilon = 0.1
         
-        # Thử load q_table từ file, nếu không có thì tạo mới
-        try:
-            self.q_table = np.load('q_table.npy')
-            print("Đã tải Q-table từ file")
-        except:
+        # Tạo thư mục models nếu chưa tồn tại
+        self.model_dir = os.path.join(os.path.dirname(__file__), 'models')
+        os.makedirs(self.model_dir, exist_ok=True)
+        
+        # Tìm file q_table có điểm số cao nhất
+        q_table_files = glob.glob(os.path.join(self.model_dir, 'q_table_*.npy'))
+        best_score = -1
+        best_q_table = None
+        
+        for file in q_table_files:
+            score = int(re.findall(r'q_table_(\d+).npy', os.path.basename(file))[0])
+            if score > best_score:
+                best_score = score
+                best_q_table = file
+        
+        if best_q_table:
+            self.q_table = np.load(best_q_table)
+            print(f"Đã tải Q-table từ file {os.path.basename(best_q_table)}")
+        else:
             print("Tạo Q-table mới")
             self.q_table = np.zeros((state_size, action_size))
 

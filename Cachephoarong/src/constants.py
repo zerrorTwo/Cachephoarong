@@ -6,7 +6,8 @@ SCREEN_HEIGHT = 720
 WINDOW_SIZE = SCREEN_WIDTH
 
 # Kích thước grid
-GRIDSIZE = 60
+# 60
+GRIDSIZE = 30
 GRID_WIDTH = int(SCREEN_HEIGHT / GRIDSIZE)
 GRID_HEIGHT = int(SCREEN_WIDTH / GRIDSIZE)
 
@@ -42,7 +43,6 @@ MUTATION_RATE = 0.7   # Tỷ lệ đột biến
 NUM_GENERATIONS = 100 # Số thế hệ tối đa
 
 FPS = 60
-FPS_AI = 200
 
 def init_grid():
     """Khởi tạo grid trống"""

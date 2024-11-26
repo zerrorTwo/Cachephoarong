@@ -67,11 +67,9 @@ class Snake:
             elif index == self.length - 1:  # đuôi con rắn
                 pygame.draw.rect(surface, (0, 230, 255), r)
             else:  # Vẽ thân con rắn
-                color = (
-                    abs(240 - 4 * index),
-                    abs(240 - 4 * index),
-                    abs(240 - 4 * index),
-                )
+                # Đảm bảo giá trị màu nằm trong khoảng 0-255
+                color_value = max(0, min(255, abs(240 - 4 * index)))
+                color = (color_value, color_value, color_value)
                 pygame.draw.rect(surface, color, r)
             pygame.draw.rect(surface, SNAKE_BORDER, r, 1)
 

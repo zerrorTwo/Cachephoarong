@@ -11,7 +11,7 @@ class Menu:
         algorithms = {
             'BFS': "Thuật Toán BFS",
             'A*': "Thuật Toán A*",
-            'AC3': "Thuật Toán AC3",
+            'BACKTRACKING': "Backtracking",
             'SA': "Thuật Toán SA",
             'COMPARE': "So Sánh"
         }

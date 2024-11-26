@@ -43,3 +43,6 @@ class Node:
             return False
 
         return True
+
+    def manhattan_distance(self, other):
+        return abs(self.position[0] - other.position[0]) + abs(self.position[1] - other.position[1])

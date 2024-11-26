@@ -2,14 +2,14 @@ import time
 import matplotlib.pyplot as plt
 from .astar import a_star
 from .bfs import bfs 
-from .ac3 import ac3
+from .backtracking import backtracking
 from .simulated_annealing import simulated_annealing
 
 def compare_algorithms(start_pos, goal_pos, grid, obstacles, num_runs=10):
     algorithms = {
         'A*': a_star,
         'BFS': bfs,
-        'AC3': ac3,
+        'BACKTRACKING': backtracking,
         'SA': simulated_annealing
     }
     

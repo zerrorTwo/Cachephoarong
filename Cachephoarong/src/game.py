@@ -7,11 +7,11 @@ from .entities.food import Food
 from .entities.obstacle import Obstacle
 from .ui.menu import Menu
 from .ui.grid import draw_grid
-from .algorithms import astar, bfs, ac3, simulated_annealing
+from .algorithms import astar, bfs, backtracking, simulated_annealing
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from .q_learning.qlearning import QLearning
-
+from .algorithms.node import Node
 
 class Game:
     def __init__(self, display_game=True):
@@ -21,8 +21,10 @@ class Game:
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.surface = pygame.Surface(self.screen.get_size()).convert()
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont("monospace", 16)
+        self.font = pygame.font.SysFont("monospace", 20, bold=True)
         self.display_game = display_game
+        self.current_path = None  # Thêm biến để lưu đường đi hiện tại
+        self.path_index = 0      # Thêm biến để theo dõi vị trí hiện tại trong đường đi
 
         self.reset_game()
 
@@ -63,8 +65,16 @@ class Game:
         self.snake.draw(self.surface)
         self.food.draw(self.surface)
         self.screen.blit(self.surface, (0, 0))
-        score_text = self.font.render(f"Score {self.score}", True, (255, 255, 0))
+        
+        # Vẽ score
+        score_text = self.font.render(f"Score {self.score}", True, (235, 91, 0))
         self.screen.blit(score_text, (5, 10))
+        
+        name1_text = self.font.render("22110184 Lê Quốc Nam", True, (235, 91, 0))
+        name2_text = self.font.render("22110187 Lê Chí Nghía", True, (235, 91, 0))
+        self.screen.blit(name1_text, (5, 40)) 
+        self.screen.blit(name2_text, (5, 70))  
+        
         pygame.display.update()
 
     # Hàm xử lí out game và pause game
@@ -100,11 +110,13 @@ class Game:
     def update(self, algorithm=None):
         if algorithm == "Q-learning":
             # Định nghĩa kích thước state và action
-            state_size = GRID_WIDTH * GRID_HEIGHT  # Kích thước state dựa trên kích thước lưới
+            state_size = (
+                GRID_WIDTH * GRID_HEIGHT
+            )  # Kích thước state dựa trên kích thước lưới
             action_size = 4  # 4 hành động có thể: lên, xuống, trái, phải
-            
+
             # Sử dụng mô hình Q-learning đã được huấn luyện
-            q_table = np.load('q_table.npy')
+            q_table = np.load("q_table.npy")
             agent = QLearning(state_size, action_size)
             agent.q_table = q_table
             state = agent.get_state(self)
@@ -112,47 +124,51 @@ class Game:
             direction = [UP, DOWN, LEFT, RIGHT][action]
             self.snake.turn(direction)
         else:
-            # Lấy vị trí hiện tại là cái đầu con rắn
-            start_pos = (
-                self.snake.get_head_position()[0] / GRIDSIZE,
-                self.snake.get_head_position()[1] / GRIDSIZE,
-            )
-            # Lấy vị trí đích là thức ăn
-            goal_pos = (
-                self.food.position[0] / GRIDSIZE,
-                self.food.position[1] / GRIDSIZE,
-            )
-
-            # Tìm đường đi theo thuật toán được chọn
-            path = None
-            if algorithm == "A*":
-                path = astar.a_star(
-                    start_pos, goal_pos, self.grid, self.obstacles.positions
+            # Chỉ tìm đường mới khi không có đường đi hoặc đã đi hết đường
+            if self.current_path is None or self.path_index >= len(self.current_path) - 1:
+                start_pos = (
+                    self.snake.get_head_position()[0] / GRIDSIZE,
+                    self.snake.get_head_position()[1] / GRIDSIZE,
                 )
-            elif algorithm == "BFS":
-                path = bfs.bfs(start_pos, goal_pos, self.grid, self.obstacles.positions)
-            elif algorithm == "AC3":
-                path = ac3.ac3(
-                    start_pos,
-                    goal_pos,
-                    (GRID_WIDTH, GRID_HEIGHT),
-                    self.obstacles.positions,
-                    self.grid,
+                goal_pos = (
+                    self.food.position[0] / GRIDSIZE,
+                    self.food.position[1] / GRIDSIZE,
                 )
-            elif algorithm == "SA":
-                path = simulated_annealing.simulated_annealing(
-                    start_pos, goal_pos, self.grid, self.obstacles.positions
+
+                # Tìm đường đi theo thuật toán được chọn
+                if algorithm == "A*":
+                    self.current_path = astar.a_star(
+                        start_pos, goal_pos, self.grid, self.obstacles.positions
+                    )
+                elif algorithm == "BFS":
+                    self.current_path = bfs.bfs(
+                        start_pos, goal_pos, self.grid, self.obstacles.positions
+                    )
+                elif algorithm == "BACKTRACKING":
+                    self.current_path = backtracking.backtracking(
+                        start_pos, goal_pos, self.grid, self.obstacles.positions
+                    )
+                elif algorithm == "SA":
+                    self.current_path = simulated_annealing.simulated_annealing(
+                        start_pos, goal_pos, self.grid, self.obstacles.positions
+                    )
+                
+                self.path_index = 0
+                
+                if self.current_path is None or len(self.current_path) < 2:
+                    return False
+
+            # Đảm bảo path_index không vượt quá độ dài của current_path
+            if self.path_index < len(self.current_path) - 1:
+                current_pos = (
+                    self.snake.get_head_position()[0] / GRIDSIZE,
+                    self.snake.get_head_position()[1] / GRIDSIZE,
                 )
-        
-            if path is None or len(path) < 2:
-                return False
-
-            # Tính hướng di chuyển từ đường đi
-            next_pos = path[1]
-            direction = (next_pos[0] - start_pos[0], next_pos[1] - start_pos[1])
-
-            # Di chuyển rắn theo hướng đã tính toán
-            self.snake.turn(direction)
+                next_pos = self.current_path[self.path_index + 1]
+                direction = (next_pos[0] - current_pos[0], next_pos[1] - current_pos[1])
+                
+                self.snake.turn(direction)
+                self.path_index += 1
 
         if not self.snake.move(self.grid, self.obstacles.positions):
             return False
@@ -163,12 +179,14 @@ class Game:
             self.food.randomize_position(
                 self.grid, self.snake.positions, self.obstacles.positions
             )
+            self.current_path = None  # Reset đường đi khi ăn được thức ăn
+            
         return True
     
     # Hàm để so sánh các chỉ số
     def compare_algorithms(self):
         # Các thuật toán dùng để so sánh
-        algorithms = ["BFS", "A*", "AC3", "SA"]
+        algorithms = ["BFS", "A*", "BACKTRACKING", "SA"]
         # Số lần để so sánh
         num_of_algo = 5
         # tạo một defaultlist để lưu các chỉ số cần thiết
@@ -205,7 +223,18 @@ class Game:
             for algo in algorithms:
                 values = stats[algo][metric]
                 runs = range(1, len(values) + 1)
-                ax.plot(runs, values, marker="o", label=algo)
+                line = ax.plot(runs, values, marker="o", label=algo)[0]
+                
+                # Thêm số liệu trên các điểm
+                for x, y in zip(runs, values):
+                    if metric == "time":
+                        # Làm tròn thời gian đến 2 chữ số thập phân
+                        ax.annotate(f'{y:.2f}', (x, y), textcoords="offset points", 
+                                  xytext=(0,10), ha='center')
+                    else:
+                        # Hiển thị số nguyên cho điểm số và số bước
+                        ax.annotate(f'{int(y)}', (x, y), textcoords="offset points", 
+                                  xytext=(0,10), ha='center')
 
             ax.set_xlabel("Lần chạy")
             ax.set_ylabel(ylabel)

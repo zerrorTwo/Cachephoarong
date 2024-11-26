@@ -9,7 +9,6 @@ def heuristic(node, goal_node):
         node.position[1] - goal_node.position[1]
     )
 
-
 def simulated_annealing(start_pos, goal_pos, grid, obstacles):
     init_temporature = 1000
     final_temp = 1  # nhiệt độ khi thuật toán dừng
