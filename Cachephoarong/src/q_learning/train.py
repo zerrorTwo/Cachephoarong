@@ -25,7 +25,7 @@ def train():
    action_size = 4  # UP, DOWN, LEFT, RIGHT
    agent = QLearning(state_size, action_size)
    
-   episodes = 10000000
+   episodes = 1000000
    max_steps = 100000
    
    for episode in range(episodes):

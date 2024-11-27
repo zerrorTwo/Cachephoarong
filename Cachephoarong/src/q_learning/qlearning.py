@@ -5,13 +5,17 @@ import glob
 import re
 import os
 
+# ví dụ bảng gồm có 10 * 10 ô thì Q table sẽ có 10 * 10 * 10 * 10 = 10000 hàng và 4 cột
+# vì đầu con rắn ở toạ độ x có 10 toạ độ y có 10 toạ độ,  có 10 toạ độ x của thức ăn, có 10 toạ độ y của thức ăn
+# nên số lượng trạng thái có thể có là 10 * 10 * 10 * 10 = 10000
+
 class QLearning:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.learning_rate = 0.1
-        self.discount_factor = 0.95
-        self.epsilon = 0.1
+        self.learning_rate = 0.1 # tốc độ học của agent
+        self.discount_factor = 0.95 # cân nhắc về số điểm của phần thưởng
+        self.epsilon = 0.1 # tý lệ khám phá ngẫu nhiên
         
         # Tạo thư mục models nếu chưa tồn tại
         self.model_dir = os.path.join(os.path.dirname(__file__), 'models')
@@ -40,6 +44,8 @@ class QLearning:
             return np.random.randint(self.action_size)
         else:
             return np.argmax(self.q_table[state])
+        
+    # cập nhật Q-table với số điểm thưởng
     def update(self, state, action, reward, next_state, done):
         if done:
             target = reward
@@ -48,6 +54,7 @@ class QLearning:
         
         self.q_table[state][action] = (1 - self.learning_rate) * self.q_table[state][action] + self.learning_rate * target
         
+        # giảm tỷ lệ khám phá ngẫu nhiên sau mỗi lần
         if self.epsilon > 0.01:
             self.epsilon *= 0.995
     def get_state(self, game):
@@ -61,5 +68,3 @@ class QLearning:
         
         state = head_x + head_y * GRID_WIDTH + food_x * GRID_WIDTH * GRID_HEIGHT + food_y * GRID_WIDTH * GRID_HEIGHT * GRID_WIDTH
         return state
-    def save_q_table(self):
-        np.save('q_table.npy', self.q_table)
