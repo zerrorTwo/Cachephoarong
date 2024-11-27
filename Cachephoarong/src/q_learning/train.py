@@ -1,34 +1,35 @@
 # run in terminal python -m src.q_learning.train to train
+import glob
 from src.game import Game
-from src.q_learning.qlearning import QLearning
+from src.q_learning.dqn import DQNAgent
 from ..constants import *
 import numpy as np
 import pygame
 import time
 import os
+import torch
 
 def train():
    # Tạo đường dẫn đến thư mục models
    model_dir = os.path.join(os.path.dirname(__file__), 'models')
    os.makedirs(model_dir, exist_ok=True)
    
-   # Tải điểm cao nhất từ file nếu tồn tại
-   best_score_path = os.path.join(model_dir, 'best_score.npy')
-   try:
-       best_score_data = np.load(best_score_path)
-       best_score = int(best_score_data)
-   except:
-       best_score = 0
-   
    game = Game(display_game=False)
-   state_size = GRID_WIDTH * GRID_HEIGHT * GRID_WIDTH * GRID_HEIGHT
+   state_size = 12  # 4 cho vị trí (head_x, head_y, food_x, food_y) + 8 cho danger directions
    action_size = 4  # UP, DOWN, LEFT, RIGHT
-   agent = QLearning(state_size, action_size)
+   agent = DQNAgent(state_size, action_size)
    
-   episodes = 1000000
+   best_score = 0
+   checkpoint_files = glob.glob(os.path.join(model_dir, 'dqn_checkpoint_*.pth'))
+   if checkpoint_files:
+       latest_checkpoint = max(checkpoint_files, key=os.path.getctime)
+       best_score = agent.load_checkpoint(latest_checkpoint)
+   
+   episodes = 100000
    max_steps = 100000
    
    for episode in range(episodes):
+       agent.episode_count = episode
        game.reset_game()
        state = agent.get_state(game)
        total_reward = 0
@@ -38,7 +39,7 @@ def train():
         #    pygame.display.flip()
         #    time.sleep(0.05)
            
-           action = agent.get_action(state)
+           action = agent.act(state)
            
            # Chuyển đổi action thành hướng di chuyển
            direction = [UP, DOWN, LEFT, RIGHT][action]
@@ -54,11 +55,12 @@ def train():
                game.food.randomize_position(game.grid, game.snake.positions, game.obstacles.positions)
                done = False
            else:
-               reward = -1
+               reward = -0.1  # Phạt nhẹ cho mỗi bước đi để khuyến khích tìm đường ngắn nhất
                done = False
            
            next_state = agent.get_state(game)
-           agent.update(state, action, reward, next_state, done)
+           agent.remember(state, action, reward, next_state, done)
+           agent.replay()
            state = next_state
            total_reward += reward
            
@@ -70,11 +72,9 @@ def train():
        # Chỉ lưu khi đạt điểm số cao hơn điểm cao nhất mọi thời đại
        if game.score > best_score:
            best_score = game.score
-           # Lưu q_table với tên file chứa điểm số
-           q_table_path = os.path.join(model_dir, f'q_table_{best_score}.npy')
-           np.save(q_table_path, agent.q_table)
-           np.save(best_score_path, np.array(best_score))
-           print(f"Đã lưu Q-table mới với điểm số cao nhất: {best_score}")
+           checkpoint_path = os.path.join(model_dir, f'dqn_checkpoint_{best_score}.pth')
+           agent.save_checkpoint(best_score, checkpoint_path)
+           print(f"Đã lưu model mới với điểm số cao nhất: {best_score}")
    
    # Xóa dòng lưu q-table ở cuối hàm train
 if __name__ == "__main__":
