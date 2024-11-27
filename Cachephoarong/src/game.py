@@ -104,6 +104,8 @@ class Game:
                     if btn_continue.collidepoint(event.pos):
                         return True
                     elif btn_restart.collidepoint(event.pos):
+                        self.screen.fill(BLACK)
+                        pygame.display.update()
                         return False
         return True
 
