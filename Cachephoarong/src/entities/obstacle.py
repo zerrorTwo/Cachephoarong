@@ -15,7 +15,7 @@ class Obstacle:
 
     def randomize_positions(self):
         self.positions = []
-        for _ in range(20):  # số lượng vật cản
+        for _ in range(0):  # số lượng vật cản
             while True:
                 x = random.randint(0, GRID_WIDTH - 1) * GRIDSIZE
                 y = random.randint(0, GRID_HEIGHT - 1) * GRIDSIZE
