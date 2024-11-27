@@ -7,7 +7,7 @@ WINDOW_SIZE = SCREEN_WIDTH
 
 # Kích thước grid
 # 60
-GRIDSIZE = 72
+GRIDSIZE = 60
 GRID_WIDTH = int(SCREEN_HEIGHT / GRIDSIZE)
 GRID_HEIGHT = int(SCREEN_WIDTH / GRIDSIZE)
 
@@ -30,19 +30,19 @@ FOOD_COLOR = (114, 137, 218)
 OBSTACLE_COLOR = (255, 0, 0)
 
 # Grid states
-EMPTY = 0
-SNAKE_BODY = 1
-FOOD = 2
-SNAKE_HEAD = 3
-SNAKE_TAIL = 4
+EMPTY = 0 # chỉ số định danh trạng thái trống
+SNAKE_BODY = 1 # chỉ số định danh trạng thái con rắn
+FOOD = 2 # chỉ số định danh trạng thái thức ăn
+SNAKE_HEAD = 3 # chỉ số định danh trạng thái đầu con rắn
+SNAKE_TAIL = 4 # chỉ số định danh trạng thái đuôi con rắn
 
-# Training constants
-SHOW_TRAINING = True  # Set False nếu không muốn hiển thị quá trình training
-POPULATION_SIZE = 1000  # Số lượng cá thể trong quần thể
-MUTATION_RATE = 0.7   # Tỷ lệ đột biến
-NUM_GENERATIONS = 100 # Số thế hệ tối đa
+OBSTACLE = 0  # số lương vật cản
 
+# FPS
 FPS = 120
+
+# Số lần so sánh
+NUM_COMPARE = 5
 
 def init_grid():
     """Khởi tạo grid trống"""

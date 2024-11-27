@@ -71,7 +71,7 @@ class Game:
         self.screen.blit(score_text, (5, 10))
         
         name1_text = self.font.render("22110184 Lê Quốc Nam", True, (235, 91, 0))
-        name2_text = self.font.render("22110187 Lê Chí Nghía", True, (235, 91, 0))
+        name2_text = self.font.render("22110187 Lê Chí Nghĩa", True, (235, 91, 0))
         self.screen.blit(name1_text, (5, 40)) 
         self.screen.blit(name2_text, (5, 70))  
         
@@ -185,54 +185,39 @@ class Game:
     
     # Hàm để so sánh các chỉ số
     def compare_algorithms(self):
-        # Các thuật toán dùng để so sánh
         algorithms = ["BFS", "A*", "BACKTRACKING", "SA"]
-        # Số lần để so sánh
-        num_of_algo = 5
-        # tạo một defaultlist để lưu các chỉ số cần thiết
-
+        num_of_algo = NUM_COMPARE
         stats = defaultdict(lambda: defaultdict(list))
-        #      stats = {
-        #     'AC3': {
-        #         'scores': [],  # danh sách điểm số
-        #         'moves': [],   # danh sách số bước di chuyển
-        #         'time': []     # danh sách thời gian thực thi
-        #     },
-        # }
+
         for i in algorithms:
             for _ in range(num_of_algo):
                 self.reset_game()
                 score, moves, time_taken = self.run_algorithm(i)
+                score = max(1, score)  
                 stats[i]["scores"].append(score)
-                stats[i]["moves"].append(moves)
-                stats[i]["time"].append(time_taken)
+                stats[i]["moves"].append(moves )  
+                stats[i]["time"].append(time_taken)  
 
-        # Tạo một đồ thị với 3 bảng
         fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
         fig.suptitle("Hiệu suất các thuật toán")
 
-        # Vẽ
         metrics = {
             "scores": ("Điểm số", ax1),
-            "moves": ("Số bước di chuyển", ax2),
-            "time": ("Thời gian thực thi (giây)", ax3),
+            "moves": ("Số bước(1 gridsize)", ax2),
+            "time": ("Thời gian(giây)", ax3),
         }
 
         for metric, (ylabel, ax) in metrics.items():
-            # Vẽ các đường cho từng thuật toán
             for algo in algorithms:
                 values = stats[algo][metric]
                 runs = range(1, len(values) + 1)
                 line = ax.plot(runs, values, marker="o", label=algo)[0]
                 
-                # Thêm số liệu trên các điểm
                 for x, y in zip(runs, values):
-                    if metric == "time":
-                        # Làm tròn thời gian đến 2 chữ số thập phân
+                    if metric in ["time", "moves"]:
                         ax.annotate(f'{y:.2f}', (x, y), textcoords="offset points", 
                                   xytext=(0,10), ha='center')
                     else:
-                        # Hiển thị số nguyên cho điểm số và số bước
                         ax.annotate(f'{int(y)}', (x, y), textcoords="offset points", 
                                   xytext=(0,10), ha='center')
 
