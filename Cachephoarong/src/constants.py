@@ -7,7 +7,7 @@ WINDOW_SIZE = SCREEN_WIDTH
 
 # Kích thước grid
 # 60
-GRIDSIZE = 60
+GRIDSIZE = 90
 GRID_WIDTH = int(SCREEN_HEIGHT / GRIDSIZE)
 GRID_HEIGHT = int(SCREEN_WIDTH / GRIDSIZE)
 
@@ -39,7 +39,7 @@ SNAKE_TAIL = 4 # chỉ số định danh trạng thái đuôi con rắn
 OBSTACLE = 0  # số lương vật cản
 
 # FPS
-FPS = 120
+FPS = 144
 
 # Số lần so sánh
 NUM_COMPARE = 5
